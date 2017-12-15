@@ -1,0 +1,37 @@
+#ifndef GEOMETRY_H
+#define GEOMETRY_H
+
+#include <math.h>
+
+struct Point {
+	float xPosition;
+	float yPosition;
+};
+
+Point vectorSubtraction(const Point& point1, const Point& point2);
+float crossProduct(const Point& point1, const Point& point2);
+
+float getDistanceBetweenLineAndPoint(const Point& lineBegin, const Point& lineEnd, const Point& distancePoint) {
+	float distance = 0;
+	Point tempPoint = vectorSubtraction(distancePoint, lineBegin);
+	float absoluteValue = crossProduct(tempPoint, lineEnd);
+
+	distance = absoluteValue / sqrt(pow(lineEnd.xPosition, 2) + pow(lineEnd.yPosition, 2));
+
+	return distance;
+};
+
+Point vectorSubtraction(const Point& point1, const Point& point2) {
+	Point tempPoint;
+
+	tempPoint.xPosition = point1.xPosition - point2.xPosition;
+	tempPoint.yPosition = point1.yPosition - point2.yPosition;
+
+	return tempPoint;
+}
+
+float crossProduct(const Point& point1, const Point& point2) {
+	return abs(point1.xPosition * point2.yPosition - point2.xPosition * point1.yPosition);
+}
+
+#endif
