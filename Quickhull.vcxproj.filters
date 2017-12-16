@@ -18,12 +18,18 @@
     <ClCompile Include="source\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\point.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\quickhull.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\geometry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\point.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
