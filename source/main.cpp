@@ -1,18 +1,15 @@
-#include <iostream>
 #include <random>
-
-#include <SFML/Graphics.hpp>
 
 #include "quickhull.h"
 
 const int g_screenWidth = 1200;
-const int g_ScreenHeight = 800;
-bool g_visualize = false;
+const int g_screenHeight = 800;
+bool g_visualize = true;
 
 int main() {
-	const float floatMin = -1000000;
-	const float floatMax = 1000000;
-	const int numberOfPoints = 1000;
+	const float floatMin = -10;
+	const float floatMax = 10;
+	const int numberOfPoints = 30;
 	std::mt19937 randomNumberGenerator;
 	randomNumberGenerator.seed(std::random_device()());
 	std::uniform_real_distribution<float> distribution(floatMin, floatMax);
@@ -27,7 +24,7 @@ int main() {
 	}
 
 	/*
-	points.empty();
+	points.clear();
 
 	Point p1(-4.5f, 8.5f);
 	Point p2(-6.5f, 8.0f);
@@ -82,8 +79,6 @@ int main() {
 	points.push_back(p25);
 	*/
 
-	quickhull(points, convexHull);
-
 	/*
 	for (int i = 0; i < convexHull.size(); ++i) {
 		convexHull[i].print();
@@ -91,27 +86,16 @@ int main() {
 	*/
 
 	if (g_visualize) {
-		sf::RenderWindow window(sf::VideoMode(g_screenWidth, g_ScreenHeight), "Quickhull");
-		window.setFramerateLimit(60);
+		sf::RenderWindow window(sf::VideoMode(g_screenWidth, g_screenHeight), "Quickhull");
+		sf::View view(sf::Vector2f(g_screenWidth / 2, g_screenHeight / 2), sf::Vector2f(50, 50));
+		window.setFramerateLimit(30);
+		window.setView(view);
 
-		while (window.isOpen()) {
-			sf::Event event;
-			while (window.pollEvent(event)) {
-				if (event.type == sf::Event::Closed) {
-					window.close();
-				}
-
-				if (event.type == sf::Event::KeyPressed) {
-					if (event.key.code == sf::Keyboard::Escape) {
-						window.close();
-					}
-				}
-			}
-
-			window.clear(sf::Color::Black);
-
-			window.display();
-		}
+		quickhullVisualized(window, points, convexHull);
+	}
+	else {
+		quickhull(points, convexHull);
+		std::cout << convexHull.size() << std::endl;
 	}
 
 	return 0;

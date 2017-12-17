@@ -9,8 +9,9 @@ public:
 
 	void setValues(float x, float y);
 	void setValues(Point& point);
+	bool hasSameValues(Point& point) const;
 
-	void print();
+	void print() const;
 
 	float xPosition;
 	float yPosition;

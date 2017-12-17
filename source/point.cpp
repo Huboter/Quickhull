@@ -26,6 +26,14 @@ void Point::setValues(Point& point) {
 	yPosition = point.yPosition;
 }
 
-void Point::print() {
+bool Point::hasSameValues(Point& point) const {
+	if (xPosition == point.xPosition && yPosition == point.yPosition) {
+		return true;
+	}
+
+	return false;
+}
+
+void Point::print() const {
 	std::cout << xPosition << ", " << yPosition << std::endl;
 }

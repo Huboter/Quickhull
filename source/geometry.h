@@ -13,7 +13,6 @@ float getDistanceBetweenLineAndPoint(const Point& lineBegin, const Point& lineEn
 	float distance = 0;
 	Point tempPoint = vectorSubtraction(distancePoint, lineBegin);
 	float absoluteValue = crossProduct(tempPoint, lineEnd);
-
 	distance = absoluteValue / sqrt(pow(lineEnd.xPosition, 2) + pow(lineEnd.yPosition, 2));
 
 	return distance;
@@ -21,7 +20,6 @@ float getDistanceBetweenLineAndPoint(const Point& lineBegin, const Point& lineEn
 
 Point vectorSubtraction(const Point& point1, const Point& point2) {
 	Point tempPoint;
-
 	tempPoint.xPosition = point1.xPosition - point2.xPosition;
 	tempPoint.yPosition = point1.yPosition - point2.yPosition;
 
@@ -37,7 +35,6 @@ float orient2D(const Point& point1, const Point& point2, const Point& point3) {
 	float a2 = point1.yPosition - point3.yPosition;
 	float b1 = point2.xPosition - point3.xPosition;
 	float b2 = point2.yPosition - point3.yPosition;
-
 	float det = a1 * b2 - a2 * b1;
 
 	return det;
