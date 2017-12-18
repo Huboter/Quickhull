@@ -26,6 +26,14 @@ void Point::setValues(Point& point) {
 	yPosition = point.yPosition;
 }
 
+bool Point::hasSameValues(float x, float y) const {
+	if (xPosition == x && yPosition == y) {
+		return true;
+	}
+
+	return false;
+}
+
 bool Point::hasSameValues(Point& point) const {
 	if (xPosition == point.xPosition && yPosition == point.yPosition) {
 		return true;

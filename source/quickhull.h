@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 #include <SFML/Graphics.hpp>
 
@@ -16,11 +17,22 @@ void findHullVisualized(sf::RenderWindow& window, std::vector<Point>& convexHull
 
 void getBoundaryPoints(const std::vector<Point>& points, std::vector<Point>& convexHull);
 void removePointsInHull(std::vector<Point>& points, const std::vector<Point>& convexHull);
+void sortConvexHull(std::vector<Point>& convexHull);
 
+void drawPoint(sf::RenderWindow& window, const Point& point, const sf::Color& color);
 void drawPoints(sf::RenderWindow& window, const std::vector<Point>& points, const sf::Color& color);
+void drawLine(sf::RenderWindow& window, const Point& lineBegin, const Point& lineEnd, const sf::Color& color);
+void drawLines(sf::RenderWindow& window, const std::vector<Point>& points, const sf::Color& color);
+
 void watiForInput(sf::RenderWindow& window, sf::Event& event);
 
-sf::CircleShape g_circle(0.2);
+const int g_screenWidth = 1200;
+const int g_screenHeight = 800;
+
+float g_circleRadius = 0.2;
+sf::CircleShape g_circle(g_circleRadius);
+
+std::vector<Point> g_allPoints;
 
 void quickhull(const std::vector<Point>& points, std::vector<Point>& convexHull) {
 	getBoundaryPoints(points, convexHull);
@@ -65,39 +77,38 @@ void findHull(std::vector<Point>& convexHull, const std::vector<Point>& points, 
 }
 
 void quickhullVisualized(sf::RenderWindow& window, const std::vector<Point>& points, std::vector<Point>& convexHull) {
-	g_circle.setPointCount(50);
 	sf::Event event;
 	window.clear(sf::Color::Black);
 	drawPoints(window, points, sf::Color::Red);
+	window.display();
 
 	getBoundaryPoints(points, convexHull);
 	std::vector<Point> tempPoints = points;
 	removePointsInHull(tempPoints, convexHull);
 
+	g_allPoints = tempPoints;
+
 	watiForInput(window, event);
+	window.clear(sf::Color::Black);
 	drawPoints(window, tempPoints, sf::Color::Red);
 	watiForInput(window, event);
 	drawPoints(window, convexHull, sf::Color::Green);
+	window.display();
 
-	findHull(convexHull, tempPoints, convexHull[0], convexHull[1]);
-	findHull(convexHull, tempPoints, convexHull[1], convexHull[2]);
-	findHull(convexHull, tempPoints, convexHull[2], convexHull[3]);
-	findHull(convexHull, tempPoints, convexHull[3], convexHull[0]);
-
-	watiForInput(window, event);
-	drawPoints(window, tempPoints, sf::Color::Red);
-	watiForInput(window, event);
-	drawPoints(window, convexHull, sf::Color::Green);
+	findHullVisualized(window, convexHull, tempPoints, convexHull[0], convexHull[1]);
+	findHullVisualized(window, convexHull, tempPoints, convexHull[1], convexHull[2]);
+	findHullVisualized(window, convexHull, tempPoints, convexHull[2], convexHull[3]);
+	findHullVisualized(window, convexHull, tempPoints, convexHull[3], convexHull[0]);
 	
-	while (window.waitEvent(event)) {
-		if (event.type == sf::Event::Closed) {
-			window.close();
-		}
+	std::vector<Point> sortedConvexHull = convexHull;
+	sortConvexHull(sortedConvexHull);
 
-		if (event.key.code == sf::Keyboard::Escape) {
-			window.close();
-		}
-	}
+	watiForInput(window, event);
+	window.clear(sf::Color::Black);
+	drawPoints(window, points, sf::Color::Red);
+	drawPoints(window, sortedConvexHull, sf::Color::Yellow);
+	drawLines(window, sortedConvexHull, sf::Color::Yellow);
+	window.display();
 }
 
 void findHullVisualized(sf::RenderWindow& window, std::vector<Point>& convexHull, const std::vector<Point>& points, const Point lineBegin, const Point lineEnd) {
@@ -124,10 +135,25 @@ void findHullVisualized(sf::RenderWindow& window, std::vector<Point>& convexHull
 		}
 	}
 
+	std::vector<Point> sortedConvexHull = convexHull;
+	sortConvexHull(sortedConvexHull);
+
+	sf::Event event;
+	watiForInput(window, event);
+	window.clear(sf::Color::Black);
+	drawPoints(window, g_allPoints, sf::Color::Red);
+	drawPoints(window, convexHull, sf::Color::Yellow);
+	drawPoint(window, lineBegin, sf::Color::Green);
+	drawPoint(window, farthestPoint, sf::Color::Magenta);
+	drawPoint(window, lineEnd, sf::Color::Green);
+	drawLines(window, sortedConvexHull, sf::Color::Yellow);
+	drawLine(window, lineBegin, lineEnd, sf::Color::Green);
+	window.display();
+
 	if (!outerPoints.empty()) {
 		convexHull.push_back(farthestPoint);
-		findHull(convexHull, outerPoints, lineBegin, farthestPoint);
-		findHull(convexHull, outerPoints, farthestPoint, lineEnd);
+		findHullVisualized(window, convexHull, outerPoints, lineBegin, farthestPoint);
+		findHullVisualized(window, convexHull, outerPoints, farthestPoint, lineEnd);
 	}
 }
 
@@ -187,31 +213,104 @@ void removePointsInHull(std::vector<Point>& points, const std::vector<Point>& co
 	points = outerPoints;
 }
 
+bool sortByXPosition(const Point& point1, const Point& point2) {
+	return point1.xPosition < point2.xPosition;
+}
+
+void sortConvexHull(std::vector<Point>& convexHull) {
+	std::vector<Point> tempPoints;
+
+	Point leftestPoint = convexHull[0];
+	Point rightesPoint = convexHull[2];
+
+	tempPoints.push_back(convexHull[0]);
+
+	std::vector<Point> leftPointList;
+	std::vector<Point> rightPointList;
+
+	for (int i = 0; i < convexHull.size(); ++i) {
+		if (orient2D(leftestPoint, rightesPoint, convexHull[i]) > 0) {
+			leftPointList.push_back(convexHull[i]);
+		}
+		else {
+			rightPointList.push_back(convexHull[i]);
+		}
+	}
+
+	std::sort(leftPointList.begin(), leftPointList.end(), sortByXPosition);
+	std::sort(rightPointList.begin(), rightPointList.end(), sortByXPosition);
+
+	for (int i = 0; i < leftPointList.size(); ++i) {
+		tempPoints.push_back(leftPointList[i]);
+	}
+
+	tempPoints.push_back(convexHull[2]);
+
+	for (int i = rightPointList.size() - 1; i > 0; --i) {
+		tempPoints.push_back(rightPointList[i]);
+	}
+
+	tempPoints.push_back(convexHull[0]);
+
+	convexHull = tempPoints;
+}
+
+void drawPoint(sf::RenderWindow& window, const Point& point, const sf::Color& color) {
+	g_circle.setFillColor(color);
+	sf::Vector2<float> position;
+	position.x = point.xPosition;
+	// y need to be inverted because sfml coordinate system works with +y in negative y axis
+	position.y = -(point.yPosition);
+	g_circle.setPosition(g_screenWidth / 2, g_screenHeight / 2);
+	g_circle.move(position);
+	window.draw(g_circle);
+}
+
 void drawPoints(sf::RenderWindow& window, const std::vector<Point>& points, const sf::Color& color) {
 	g_circle.setFillColor(color);
 	sf::Vector2<float> position;
 
 	for (int i = 0; i < points.size(); ++i) {
-		position.x = points[i].xPosition + 1200/2;
-		position.y = points[i].yPosition + 800/2;
-
-		g_circle.setPosition(position);
+		position.x = points[i].xPosition;
+		// y need to be inverted because sfml coordinate system works with +y in negative y axis
+		position.y = -(points[i].yPosition);
+		g_circle.setPosition(g_screenWidth/2, g_screenHeight/2);
+		g_circle.move(position);
 		window.draw(g_circle);
 	}
+}
 
-	window.display();
+void drawLine(sf::RenderWindow& window, const Point& lineBegin, const Point& lineEnd, const sf::Color& color) {
+	sf::VertexArray line(sf::Lines, 2);
+	line[0].position = sf::Vector2f(lineBegin.xPosition + g_screenWidth / 2 + g_circleRadius / 2, -lineBegin.yPosition + g_screenHeight / 2 + g_circleRadius / 2);
+	line[0].color = color;
+	line[1].position = sf::Vector2f(lineEnd.xPosition + g_screenWidth / 2 + g_circleRadius / 2, -lineEnd.yPosition + g_screenHeight / 2 + g_circleRadius / 2);
+	line[1].color = color;
+	window.draw(line);
+}
+
+void drawLines(sf::RenderWindow& window, const std::vector<Point>& points, const sf::Color& color) {
+	sf::VertexArray line(sf::Lines, 2);
+
+	for (int i = 0; i < points.size()-1; ++i) {
+		line[0].position = sf::Vector2f(points[i].xPosition + g_screenWidth / 2 + g_circleRadius / 2, -points[i].yPosition + g_screenHeight / 2 + g_circleRadius / 2);
+		line[0].color = color;
+		line[1].position = sf::Vector2f(points[i+1].xPosition + g_screenWidth / 2 + g_circleRadius / 2, -points[i+1].yPosition + g_screenHeight / 2 + g_circleRadius / 2);
+		line[1].color = color;
+		window.draw(line);
+	}
 }
 
 void watiForInput(sf::RenderWindow& window, sf::Event& event) {
 	while (window.waitEvent(event)) {
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-			break;
+		if (event.type == sf::Event::KeyPressed) {
+			if (event.key.code == sf::Keyboard::Space) {
+				break;
+			}
+			if (event.key.code == sf::Keyboard::Escape) {
+				window.close();
+			}
 		}
-		/*
-		if (event.key.code == sf::Keyboard::Space) {
-			break;
-		}
-		*/
 	}
 }
 
