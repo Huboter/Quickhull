@@ -22,8 +22,7 @@ void Point::setValues(float x, float y) {
 }
 
 void Point::setValues(Point& point) {
-	xPosition = point.xPosition;
-	yPosition = point.yPosition;
+	setValues(point.xPosition, point.yPosition);
 }
 
 bool Point::hasSameValues(float x, float y) const {
@@ -34,12 +33,8 @@ bool Point::hasSameValues(float x, float y) const {
 	return false;
 }
 
-bool Point::hasSameValues(Point& point) const {
-	if (xPosition == point.xPosition && yPosition == point.yPosition) {
-		return true;
-	}
-
-	return false;
+bool Point::hasSameValues(const Point& point) const {
+	return hasSameValues(point.xPosition, point.yPosition);
 }
 
 void Point::print() const {

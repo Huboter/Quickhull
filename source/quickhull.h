@@ -17,6 +17,7 @@ void findHullVisualized(sf::RenderWindow& window, std::vector<Point>& convexHull
 
 void getBoundaryPoints(const std::vector<Point>& points, std::vector<Point>& convexHull);
 void removePointsInHull(std::vector<Point>& points, const std::vector<Point>& convexHull);
+bool sortByXPosition(const Point& point1, const Point& point2);
 void sortConvexHull(std::vector<Point>& convexHull);
 
 void drawPoint(sf::RenderWindow& window, const Point& point, const sf::Color& color);
@@ -46,10 +47,6 @@ void quickhull(const std::vector<Point>& points, std::vector<Point>& convexHull)
 }
 
 void findHull(std::vector<Point>& convexHull, const std::vector<Point>& points, const Point lineBegin, const Point lineEnd) {
-	if (points.empty()) {
-		return;
-	}
-	
 	std::vector<Point> outerPoints;
 	Point farthestPoint;
 	// for safety reasons -1 beacuse we are not sure if the point can be on line
@@ -112,10 +109,6 @@ void quickhullVisualized(sf::RenderWindow& window, const std::vector<Point>& poi
 }
 
 void findHullVisualized(sf::RenderWindow& window, std::vector<Point>& convexHull, const std::vector<Point>& points, const Point lineBegin, const Point lineEnd) {
-	if (points.empty()) {
-		return;
-	}
-
 	std::vector<Point> outerPoints;
 	Point farthestPoint;
 	// for safety reasons -1 beacuse we are not sure if the point can be on line
@@ -142,10 +135,13 @@ void findHullVisualized(sf::RenderWindow& window, std::vector<Point>& convexHull
 	watiForInput(window, event);
 	window.clear(sf::Color::Black);
 	drawPoints(window, g_allPoints, sf::Color::Red);
-	drawPoints(window, convexHull, sf::Color::Yellow);
-	drawPoint(window, lineBegin, sf::Color::Green);
-	drawPoint(window, farthestPoint, sf::Color::Magenta);
-	drawPoint(window, lineEnd, sf::Color::Green);
+
+	if (!farthestPoint.hasSameValues(0, 0)) {
+		drawPoint(window, lineBegin, sf::Color::Green);
+		drawPoint(window, farthestPoint, sf::Color::Magenta);
+		drawPoint(window, lineEnd, sf::Color::Green);
+	}
+	
 	drawLines(window, sortedConvexHull, sf::Color::Yellow);
 	drawLine(window, lineBegin, lineEnd, sf::Color::Green);
 	window.display();
@@ -219,39 +215,36 @@ bool sortByXPosition(const Point& point1, const Point& point2) {
 
 void sortConvexHull(std::vector<Point>& convexHull) {
 	std::vector<Point> tempPoints;
-
 	Point leftestPoint = convexHull[0];
 	Point rightesPoint = convexHull[2];
-
 	tempPoints.push_back(convexHull[0]);
 
-	std::vector<Point> leftPointList;
-	std::vector<Point> rightPointList;
+	std::vector<Point> leftPoints;
+	std::vector<Point> rightPoints;
 
 	for (int i = 0; i < convexHull.size(); ++i) {
 		if (orient2D(leftestPoint, rightesPoint, convexHull[i]) > 0) {
-			leftPointList.push_back(convexHull[i]);
+			leftPoints.push_back(convexHull[i]);
 		}
 		else {
-			rightPointList.push_back(convexHull[i]);
+			rightPoints.push_back(convexHull[i]);
 		}
 	}
 
-	std::sort(leftPointList.begin(), leftPointList.end(), sortByXPosition);
-	std::sort(rightPointList.begin(), rightPointList.end(), sortByXPosition);
+	std::sort(leftPoints.begin(), leftPoints.end(), sortByXPosition);
+	std::sort(rightPoints.begin(), rightPoints.end(), sortByXPosition);
 
-	for (int i = 0; i < leftPointList.size(); ++i) {
-		tempPoints.push_back(leftPointList[i]);
+	for (int i = 0; i < leftPoints.size(); ++i) {
+		tempPoints.push_back(leftPoints[i]);
 	}
 
 	tempPoints.push_back(convexHull[2]);
 
-	for (int i = rightPointList.size() - 1; i > 0; --i) {
-		tempPoints.push_back(rightPointList[i]);
+	for (int i = rightPoints.size() - 1; i > 0; --i) {
+		tempPoints.push_back(rightPoints[i]);
 	}
 
 	tempPoints.push_back(convexHull[0]);
-
 	convexHull = tempPoints;
 }
 
@@ -267,16 +260,8 @@ void drawPoint(sf::RenderWindow& window, const Point& point, const sf::Color& co
 }
 
 void drawPoints(sf::RenderWindow& window, const std::vector<Point>& points, const sf::Color& color) {
-	g_circle.setFillColor(color);
-	sf::Vector2<float> position;
-
 	for (int i = 0; i < points.size(); ++i) {
-		position.x = points[i].xPosition;
-		// y need to be inverted because sfml coordinate system works with +y in negative y axis
-		position.y = -(points[i].yPosition);
-		g_circle.setPosition(g_screenWidth/2, g_screenHeight/2);
-		g_circle.move(position);
-		window.draw(g_circle);
+		drawPoint(window, points[i], color);
 	}
 }
 
@@ -290,14 +275,8 @@ void drawLine(sf::RenderWindow& window, const Point& lineBegin, const Point& lin
 }
 
 void drawLines(sf::RenderWindow& window, const std::vector<Point>& points, const sf::Color& color) {
-	sf::VertexArray line(sf::Lines, 2);
-
 	for (int i = 0; i < points.size()-1; ++i) {
-		line[0].position = sf::Vector2f(points[i].xPosition + g_screenWidth / 2 + g_circleRadius / 2, -points[i].yPosition + g_screenHeight / 2 + g_circleRadius / 2);
-		line[0].color = color;
-		line[1].position = sf::Vector2f(points[i+1].xPosition + g_screenWidth / 2 + g_circleRadius / 2, -points[i+1].yPosition + g_screenHeight / 2 + g_circleRadius / 2);
-		line[1].color = color;
-		window.draw(line);
+		drawLine(window, points[i], points[i+1], color);
 	}
 }
 

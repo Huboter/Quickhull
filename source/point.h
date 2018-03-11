@@ -10,7 +10,7 @@ public:
 	void setValues(float x, float y);
 	void setValues(Point& point);
 	bool hasSameValues(float x, float y) const;
-	bool hasSameValues(Point& point) const;
+	bool hasSameValues(const Point& point) const;
 
 	void print() const;
 

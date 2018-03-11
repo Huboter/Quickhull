@@ -1,17 +1,23 @@
 #include <random>
 #include <chrono>
 #include <iomanip>
+#include <Windows.h>
 
 #include "quickhull.h"
 
+// use nvidia GPU on laptops with hybrid hardware
+extern "C" {
+	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+}
+
 void printTime(double timeInSeconds);
 
-bool g_visualize = true;
+const bool g_visualize = true;
+const int g_numberOfPoints = 100;
 
 int main() {
-	const float floatMin = -100;
-	const float floatMax = 100;
-	const int numberOfPoints = 1000;
+	const float floatMin = -50;
+	const float floatMax = 50;
 	std::mt19937 randomNumberGenerator;
 	randomNumberGenerator.seed(std::random_device()());
 	std::uniform_real_distribution<float> distribution(floatMin, floatMax);
@@ -19,7 +25,7 @@ int main() {
 	std::vector<Point> points;
 	std::vector<Point> convexHull;
 
-	for (int i = 0; i < numberOfPoints; ++i) {
+	for (int i = 0; i < g_numberOfPoints; ++i) {
 		Point point(distribution(randomNumberGenerator), distribution(randomNumberGenerator));
 		points.push_back(point);
 	}
@@ -27,7 +33,7 @@ int main() {
 	if (g_visualize) {
 		sf::RenderWindow window(sf::VideoMode(g_screenWidth, g_screenHeight), "Quickhull");
 		sf::Event event;
-		sf::View view(sf::Vector2f(g_screenWidth / 2, g_screenHeight / 2), sf::Vector2f(250, 250));
+		sf::View view(sf::Vector2f(g_screenWidth / 2, g_screenHeight / 2), sf::Vector2f(150, 150));
 		window.setView(view);
 		window.setFramerateLimit(30);
 
